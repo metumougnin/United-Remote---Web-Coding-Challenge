@@ -1,1 +1,1 @@
-# United Remote - Web Coding Challenge
+# United Remote - Web Challenge Coding
