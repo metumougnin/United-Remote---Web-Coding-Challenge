@@ -9,6 +9,36 @@ $errors = array();
 // connect to the database
 $db = mysqli_connect('localhost', 'root', 'root', 'unitedremote_wcc');
 
+
+// USER DELETES A PREFERRED SHOP
+if (isset($_GET['deleteshopfrompreferred'])) {
+    
+        $query = "DELETE FROM users_shops WHERE email_user='". $_SESSION['email'] ."' and id_shop=". $_GET['deleteshopfrompreferred'] ."";
+        mysqli_query($db, $query);
+}
+
+
+// USER ADDS A NEW PREFERRED SHOP
+if (isset($_GET['addshoptopreferred'])) {
+    
+    // First, we need to check if the user already has the shop in his preferred shops
+    $check_entry_query = "SELECT * FROM users_shops WHERE email_user='". $_SESSION['email'] ."' and id_shop=". $_GET['addshoptopreferred'] ." LIMIT 1";
+    $result = mysqli_query($db, $check_entry_query);
+    //$entry = mysqli_fetch_array($result);
+    
+    // If not, then add the shop to his preferred ones
+    if (mysqli_num_rows($result) == 0) {
+        // Insert the shop into the preferred shops
+        $query = "INSERT INTO users_shops (email_user, id_shop)
+		  VALUES('". $_SESSION['email'] ."', '" .$_GET['addshoptopreferred'] . "')";
+        mysqli_query($db, $query);
+        
+        // Move to the preferred shops
+        //header("location: preferred_shops.php");
+    }
+    
+}
+
 // REGISTER USER
 if (isset($_POST['reg_user'])) {
   // receive all input values from the form
@@ -26,8 +56,8 @@ if (isset($_POST['reg_user'])) {
 
   // first check the database to make sure 
   // a user does not already exist with the same username and/or email
-  $user_check_query = "SELECT * FROM users WHERE email='$email' LIMIT 1";
-  $result = mysqli_query($db, $user_check_query);
+  $check_entry_query = "SELECT * FROM users WHERE email='$email' LIMIT 1";
+  $result = mysqli_query($db, $check_entry_query);
   $user = mysqli_fetch_assoc($result);
   
   if ($user) { 
@@ -44,7 +74,7 @@ if (isset($_POST['reg_user'])) {
   	$query = "INSERT INTO users (email, password) 
   			  VALUES('$email', '$password')";
   	mysqli_query($db, $query);
-  	$_SESSION['username'] = $email;
+  	$_SESSION['email'] = $email;
   	$_SESSION['success'] = "You are now logged in";
   	header('location: nearby_shops.php');
   }
@@ -67,7 +97,7 @@ if (isset($_POST['login_user'])) {
         $query = "SELECT * FROM users WHERE email='$username' AND password='$password'";
         $results = mysqli_query($db, $query);
         if (mysqli_num_rows($results) == 1) {
-            $_SESSION['username'] = $username;
+            $_SESSION['email'] = $username;
             $_SESSION['success'] = "You are now logged in";
             header('location: nearby_shops.php');
         }else {
