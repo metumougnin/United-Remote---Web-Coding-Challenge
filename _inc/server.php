@@ -10,13 +10,33 @@ $errors = array();
 $db = mysqli_connect('localhost', 'root', 'root', 'unitedremote_wcc');
 
 
+// DISLIKE A SHOP
+if (isset($_GET['dislikeshop'])) {
+    
+    // First, we need to check we don't already have an entry for this shop
+    $check_entry_query = "SELECT * FROM users_disliked_shops WHERE email_user='". $_SESSION['email'] ."' and id_shop=". $_GET['dislikeshop'] ." LIMIT 1";
+    $result = mysqli_query($db, $check_entry_query);
+    
+    // If not, then add the shop to his disliked ones
+    if (mysqli_num_rows($result) == 0) {
+        $time_start = date('Y-m-d H:i:s', strtotime('0 hour'));
+        $time_end = date('Y-m-d H:i:s', strtotime('2 hour'));
+        
+        $query = "INSERT INTO users_disliked_shops (email_user, id_shop, start_at, end_at)
+		  VALUES('". $_SESSION['email'] ."', '" .$_GET['dislikeshop'] . "', '$time_start', '$time_end')";
+        //echo $query;
+        mysqli_query($db, $query) or die(mysqli_error($db));
+    }
+    
+}
+
+
 // USER DELETES A PREFERRED SHOP
 if (isset($_GET['deleteshopfrompreferred'])) {
     
         $query = "DELETE FROM users_shops WHERE email_user='". $_SESSION['email'] ."' and id_shop=". $_GET['deleteshopfrompreferred'] ."";
         mysqli_query($db, $query);
 }
-
 
 // USER ADDS A NEW PREFERRED SHOP
 if (isset($_GET['addshoptopreferred'])) {

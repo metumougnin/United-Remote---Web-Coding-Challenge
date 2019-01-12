@@ -17,19 +17,48 @@
     	    $select_pref_shops = "SELECT * FROM users_shops WHERE email_user='". $_SESSION['email'] ."' ";
     	    $result_pref_shops = mysqli_query($db, $select_pref_shops);
     	    $flag_pref = 0;
-    	  
-    	    while($line_pref_shops = mysqli_fetch_assoc($result_pref_shops)) {
     	    
-        	    // Don't display this shop if it's in the current user preferred shops
-        	    //if ($line_pref_shops['id_shop'] != $line['id']) {
-        	    //    continue;
+    	    while($line_pref_shops = mysqli_fetch_assoc($result_pref_shops)) {
+    	        
+    	        // 
     	        if ($line_pref_shops['id_shop'] == $line['id']) {
-        	        $flag_pref = 1;
-        	        //break;
+    	            $flag_pref = 1;
+    	        }
+    	    }
+    	    
+    	    if ($flag_pref == 1) {
+    	        continue;
+    	    }
+    	    
+    	    // Query to select current user disliked shops
+    	    $select_disliked_shops = "SELECT * FROM users_disliked_shops WHERE email_user='". $_SESSION['email'] ."' ";
+    	    $result_disliked_shops = mysqli_query($db, $select_disliked_shops);
+    	    $flag_disliked = 0;
+    	  
+    	    while($line_disliked_shops = mysqli_fetch_assoc($result_disliked_shops)) {
+    	    
+        	    // Don't display this shop if the user disliked it
+    	        if ($line_disliked_shops['id_shop'] == $line['id']) {
+    	            /*
+    	            echo time();
+    	            echo "\n";
+    	            echo strtotime($line_disliked_shops['end_at']);
+    	            */
+    	            
+    	            // Delete the entry from the disliked shops if the countdown (2hrs) is over
+    	            //if(/*time()*/ strtotime(date('Y-m-d H:i:s', strtotime('2 hour'))) >= strtotime($line_disliked_shops['end_at'])) {
+    	            if(time() >= strtotime($line_disliked_shops['end_at'])) {
+    	                $query = "DELETE FROM users_disliked_shops WHERE email_user='". $_SESSION['email'] ."' and id_shop=". $line_disliked_shops['id_shop'] ."";
+    	                mysqli_query($db, $query);
+    	                
+    	            } else {
+    	                $flag_disliked = 1;
+    	            }
         	    }  
     	    }
     	    
-    	    if ($flag_pref == 0) {
+    	    
+    	    if ($flag_pref == 0 && $flag_disliked == 0) {
     	        
 	?>
 	
@@ -44,9 +73,9 @@
                 </div>
                 <div class="card-footer">
                     <div class="container-login100-form-btn">
-                        <button class="shop-dislike-btn shop-btn">
+                        <a class="shop-dislike-btn shop-btn" href="nearby_shops.php?dislikeshop=<?php echo $line['id'] ?>">
                             Dislike
-                        </button>
+                        </a>
                         <a class="shop-like-btn shop-btn" href="nearby_shops.php?addshoptopreferred=<?php echo $line['id'] ?>">
                             Like
                         </a>
@@ -68,12 +97,13 @@
     <!-- /.container -->
 
     <!-- Footer -->
+    <!--  
     <footer class="py-5 bg-dark">
       <div class="container">
         <p class="m-0 text-center text-white">Copyright &copy; Metu Mougnin - United Remote 2018</p>
       </div>
-      <!-- /.container -->
     </footer>
+    -->
 
     <!-- Bootstrap core JavaScript -->
     <script src="vendor/jquery/jquery.min.js"></script>
